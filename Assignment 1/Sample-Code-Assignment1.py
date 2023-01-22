@@ -22,10 +22,10 @@ def getdata(filename):
     Y = np.reshape(Y, (-1, 1))
     return X , Y
 
-X_train, Y_train = getdata("C:/Users/User/Desktop/Ryerson/AI-Course/Assignment1/Datasets/Dataset_1_train.csv")
+X_train, Y_train = getdata("Dataset1/Dataset_1_train.csv")
 print(X_train.shape)
 print(Y_train.shape)
-X_valid, Y_valid = getdata("C:/Users/User/Desktop/Ryerson/AI-Course/Assignment1/Datasets/Dataset_1_valid.csv")
+X_valid, Y_valid = getdata("Dataset1/Dataset_1_valid.csv")
 print(X_valid.shape)
 print(Y_valid.shape)
 
@@ -73,7 +73,7 @@ MSE_validdata = computeMSE (Hypothesis_valid,Y_valid)
 print(MSE_traindata)
 print(MSE_validdata)
 
-plt.plot(Y_train)
+plt.scatter(X_train,Y_train)
 plt.plot(Hypothesis_train)
 plt.legend(['Y (train)','Y (train) approximation'])
 plt.xlabel('example data')
