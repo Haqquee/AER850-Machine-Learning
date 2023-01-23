@@ -3,8 +3,6 @@ import csv
 import matplotlib.pyplot as plt
 
 def getdata(filename):
-    import csv
-    import numpy as np
     with open (filename,'r') as csvfile:
         Dataset_1_test = csv.reader(csvfile)   
         X = []
@@ -36,6 +34,7 @@ def getfeaturematrix (X,polynomial):
         Xm.append(a)
     Xm = np.array(Xm)
     Xm = np.squeeze(Xm, axis=(2,)).T
+    print(Xm)
     return Xm
 
 Xm_train = getfeaturematrix (X_train,15)
