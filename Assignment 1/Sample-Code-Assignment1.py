@@ -37,16 +37,16 @@ def getfeaturematrix (X,polynomial):
     print(Xm)
     return Xm
 
-Xm_train = getfeaturematrix (X_train,15)
+Xm_train = getfeaturematrix (X_train,20)
 feature_no = Xm_train.shape[1]
 print(Xm_train.shape)
 
-Xm_valid = getfeaturematrix (X_valid,15)
+Xm_valid = getfeaturematrix (X_valid,20)
 print(Xm_valid.shape)
-Xm_train = getfeaturematrix (X_train,15)
+Xm_train = getfeaturematrix (X_train,20)
 feature_no = Xm_train.shape[1]
 print(Xm_train.shape)
-Xm_valid = getfeaturematrix (X_valid,15)
+Xm_valid = getfeaturematrix (X_valid,20)
 print(Xm_valid.shape)
 
 
@@ -73,14 +73,14 @@ print(MSE_traindata)
 print(MSE_validdata)
 
 plt.scatter(X_train,Y_train)
-plt.plot(Hypothesis_train)
+plt.scatter(X_train,Hypothesis_train)
 plt.legend(['Y (train)','Y (train) approximation'])
 plt.xlabel('example data')
 plt.ylabel('value of Y')
 plt.show()
 
-plt.plot(Y_valid)
-plt.plot(Hypothesis_valid)
+plt.scatter(X_valid,Y_valid)
+plt.scatter(X_valid,Hypothesis_valid)
 plt.legend(['Y (valid)','Y (valid) approximation'])
 plt.xlabel('example data')
 plt.ylabel('value of Y')
