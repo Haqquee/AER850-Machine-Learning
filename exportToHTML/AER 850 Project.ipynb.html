@@ -1,0 +1,130 @@
+<html>
+<head>
+<title>AER 850 Project.ipynb</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #7ec3e6;}
+.s1 { color: #ebebeb;}
+.s2 { color: #ed864a;}
+.s3 { color: #ed864a; font-weight: bold;}
+.s4 { color: #54b33e;}
+</style>
+</head>
+<body bgcolor="#131314">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+AER 850 Project.ipynb</font>
+</center></td></tr></table>
+<pre><span class="s0">#%% md 
+</span><span class="s1">AER 850 Machine Learning Project 
+Hussein Hamie 500876254 
+Mishran Haque 500896460 
+ 
+**Turbofan Engine Remaining Useful Life Prediction** 
+**DATASET:** NASA Turbofan Jet Engine Data Set 
+</span><span class="s0">#%% md 
+</span><span class="s1">Data sets consists of multiple multivariate time series. Each data set is further divided into training and test subsets. Each time series is from a different engine i.e., the data can be considered to be from a fleet of engines of the same type. Each engine starts with different degrees of initial wear and manufacturing variation which is unknown to the user. This wear and variation is considered normal, i.e., it is not considered a fault condition. There are three operational settings that have a substantial effect on engine performance. These settings are also included in the data. The data is contaminated with sensor noise. 
+ 
+The engine is operating normally at the start of each time series, and develops a fault at some point during the series. In the training set, the fault grows in magnitude until system failure. In the test set, the time series ends some time prior to system failure. The objective of the competition is to predict the number of remaining operational cycles before failure in the test set, i.e., the number of operational cycles after the last cycle that the engine will continue to operate. Also provided a vector of true Remaining Useful Life (RUL) values for the test data. 
+ 
+The data are provided as a zip-compressed text file with 26 columns of numbers, separated by spaces. Each row is a snapshot of data taken during a single operational cycle, each column is a different variable. The columns correspond to: 
+1) unit number 
+2) time, in cycles 
+3) operational setting 1 
+4) operational setting 2 
+5) operational setting 3 
+6) sensor measurement 1 
+7) sensor measurement 2 
+... 
+26) sensor measurement 26 
+ 
+Data Set: FD001 
+Train trjectories: 100 
+Test trajectories: 100 
+Conditions: ONE (Sea Level) 
+Fault Modes: ONE (HPC Degradation) 
+ 
+Data Set: FD002 
+Train trjectories: 260 
+Test trajectories: 259 
+Conditions: SIX 
+Fault Modes: ONE (HPC Degradation) 
+ 
+Data Set: FD003 
+Train trjectories: 100 
+Test trajectories: 100 
+Conditions: ONE (Sea Level) 
+Fault Modes: TWO (HPC Degradation, Fan Degradation) 
+ 
+Data Set: FD004 
+Train trjectories: 248 
+Test trajectories: 249 
+Conditions: SIX 
+Fault Modes: TWO (HPC Degradation, Fan Degradation) 
+ 
+Reference: A. Saxena, K. Goebel, D. Simon, and N. Eklund, ‘Damage Propagation Modeling for Aircraft Engine Run-to-Failure Simulation’, in the Proceedings of the 1st International Conference on Prognostics and Health Management (PHM08), Denver CO, Oct 2008. 
+</span><span class="s0">#%% 
+</span><span class="s2">import </span><span class="s1">pandas </span><span class="s2">as </span><span class="s1">pd</span>
+<span class="s2">import </span><span class="s1">numpy </span><span class="s2">as </span><span class="s1">np</span>
+<span class="s2">import </span><span class="s1">matplotlib.pyplot </span><span class="s2">as </span><span class="s1">plt</span>
+<span class="s2">import </span><span class="s1">seaborn </span><span class="s2">as </span><span class="s1">sns</span>
+<span class="s2">from </span><span class="s1">sklearn.ensemble </span><span class="s2">import </span><span class="s1">RandomForestRegressor</span>
+<span class="s2">import </span><span class="s1">sklearn</span>
+<span class="s2">from </span><span class="s1">sklearn.metrics </span><span class="s2">import </span><span class="s1">mean_squared_error</span><span class="s3">, </span><span class="s1">r2_score</span>
+<span class="s2">import </span><span class="s1">os</span>
+<span class="s2">from </span><span class="s1">sklearn.model_selection </span><span class="s2">import </span><span class="s1">train_test_split</span>
+<span class="s2">from </span><span class="s1">sklearn.preprocessing </span><span class="s2">import </span><span class="s1">StandardScaler</span>
+<span class="s2">import </span><span class="s1">random</span>
+<span class="s2">import </span><span class="s1">warnings</span>
+<span class="s0">#warnings.filterwarnings('ignore')</span>
+<span class="s0">#%% md 
+</span>
+<span class="s0">#%% 
+# define filepath to read data</span>
+<span class="s1">dir_path = </span><span class="s4">'./CMaps/'</span>
+<span class="s0"># define column names for easy indexing</span>
+<span class="s1">index_names = [</span><span class="s4">'unit_number'</span><span class="s3">, </span><span class="s4">'time_cycles'</span><span class="s1">]</span>
+<span class="s1">setting_names = [</span><span class="s4">'setting_1'</span><span class="s3">, </span><span class="s4">'setting_2'</span><span class="s3">, </span><span class="s4">'setting_3'</span><span class="s1">]</span>
+<span class="s1">sensor_names = sensor_names=[ </span><span class="s4">&quot;(Total temperature at fan inlet) (◦R)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Total temperature at LPC outlet) (◦R)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Total temperature at HPC outlet) (◦R)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Total temperature at LPT outlet) (◦R)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Pressure at fan inlet) (psia)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Total pressure in bypass-duct) (psia)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Total pressure at HPC outlet) (psia)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Physical fan speed) (rpm)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Physical core speed) (rpm)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Engine pressure ratio(P50/P2)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Static pressure at HPC outlet) (psia)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Ratio of fuel flow to Ps30) (pps/psia)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Corrected fan speed) (rpm)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Corrected core speed) (rpm)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Bypass Ratio) &quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Burner fuel-air ratio)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Bleed Enthalpy)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Demanded fan speed)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(Demanded corrected fan speed)&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(HPT coolant bleed (lbm/s))&quot;</span><span class="s3">,</span>
+                              <span class="s4">&quot;(LPT coolant bleed (lbm/s))&quot; </span><span class="s1">]</span>
+<span class="s1">col_names = index_names + setting_names + sensor_names</span>
+<span class="s0">#%% 
+</span><span class="s1">FD001_train = pd.read_csv(</span><span class="s4">'CMaps/train_FD001.txt'</span><span class="s3">,</span><span class="s1">sep=</span><span class="s4">'\s+'</span><span class="s3">,</span><span class="s1">header=</span><span class="s2">None</span><span class="s3">,</span><span class="s1">index_col=</span><span class="s2">False</span><span class="s3">,</span><span class="s1">names=col_names)</span>
+<span class="s1">FD001_test = pd.read_csv(</span><span class="s4">'CMaps/train_FD002.txt'</span><span class="s3">,</span><span class="s1">sep=</span><span class="s4">'\s+'</span><span class="s3">,</span><span class="s1">header=</span><span class="s2">None</span><span class="s3">,</span><span class="s1">index_col=</span><span class="s2">False</span><span class="s3">,</span><span class="s1">names=col_names)</span>
+<span class="s0">#%% 
+</span><span class="s1">FD001_train.head()</span>
+<span class="s0">#%% 
+</span><span class="s1">FD001_train.info()</span>
+<span class="s0">#%% 
+</span><span class="s1">FD001_train.describe(include=</span><span class="s4">'all'</span><span class="s1">)</span>
+<span class="s0">#%% 
+#Finding missing/incorrect data</span>
+<span class="s1">FD001_train.isnull().sum()</span>
+<span class="s0">#%% 
+</span><span class="s2">from </span><span class="s1">ydata_profiling </span><span class="s2">import </span><span class="s1">ProfileReport</span>
+<span class="s1">data_report = ProfileReport(FD001_train)</span>
+<span class="s1">data_report</span>
+<span class="s0">#%% 
+</span></pre>
+</body>
+</html>
